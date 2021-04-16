@@ -6,9 +6,9 @@ module.exports = class Greeting {
     constructor() {
         this.username = "Clyde";
         this.guildName = "ServerName";
-        this.colorTitleBorder = "#000000";
+        this.colorTitleBorder = "#ffffff";
         this.colorMemberCount = "#ffffff";
-        this.textMemberCount = "- {count}th member !";
+        this.textMemberCount = "Member Ke {count}";
         this.memberCount = "0";
         this.backgroundImage = `${__dirname}/../../assets/img/1px.png`;
         this.avatar = `${__dirname}/../../assets/img/default-avatar.png`;
@@ -126,23 +126,18 @@ module.exports = class Greeting {
         ctx.font = "22px Bold";
         ctx.fillText(memberCount, 40, canvas.height - 35);
 
-        // Draw # for discriminator
-        ctx.fillStyle = this.colorHashtag;
-        ctx.font = "75px SketchMatch";
-        ctx.fillText("#", canvas.width - 690, canvas.height - 165);
-
         // Draw title
         ctx.font = "90px Bold";
-        ctx.strokeStyle = this.colorTitleBorder;
-        ctx.lineWidth = 15;
+        ctx.strokeStyle = "#b165e0";
+        ctx.lineWidth = 5;
         ctx.strokeText(this.textTitle, canvas.width - 620, canvas.height - 330);
         ctx.fillStyle = this.colorTitle;
         ctx.fillText(this.textTitle, canvas.width - 620, canvas.height - 330);
 
         // Draw avatar circle
         ctx.beginPath();
-        ctx.lineWidth = 10;
-        ctx.strokeStyle = this.colorAvatar;
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = "#b165e0";
         ctx.arc(180, 225, 135, 0, Math.PI * 2, true);
         ctx.stroke();
         ctx.closePath();
