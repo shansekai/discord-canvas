@@ -97,10 +97,10 @@ module.exports = class Greeting {
         ctx.fillRect(25, canvas.height - 25, canvas.width - 50, 25);
         ctx.fillStyle = this.colorUsernameBox;
         ctx.globalAlpha = this.opacityUsernameBox;
-        ctx.fillRect(344, canvas.height - 296, 625, 65);
+        ctx.fillRect(344, canvas.height - 296, 636, 65);
         ctx.fillStyle = this.colorDiscriminatorBox;
         ctx.globalAlpha = this.opacityDiscriminatorBox;
-        ctx.fillRect(389, canvas.height - 225, 138, 65);
+        ctx.fillRect(344, canvas.height - 202, 220, 65);
         ctx.fillStyle = this.colorMessageBox;
         ctx.globalAlpha = this.opacityMessageBox;
         ctx.fillRect(308, canvas.height - 110, 672, 65);
@@ -119,7 +119,7 @@ module.exports = class Greeting {
         // Draw discriminator
         ctx.fillStyle = this.colorDiscriminator;
         ctx.font = "40px Bold";
-        ctx.fillText(this.discriminator, canvas.width - 623, canvas.height - 178);
+        ctx.fillText(this.discriminator, canvas.width - 660, canvas.height - 155);
 
         // Draw membercount
         ctx.fillStyle = this.colorMemberCount;
