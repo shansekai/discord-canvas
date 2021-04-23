@@ -1,178 +1,150 @@
-const { create, Client } = require('@open-wa/wa-automate')
-const { color } = require('./utils')
-const fs = require('fs-extra')
-const msgHandler = require('./handler/message')
-const canvas = require('discord-canvas')
-const moment = require('moment-timezone')
+const Canvas = require("canvas");
+const { formatVariable, applyText } = require("../../utils/functions");
 
-// cache handler and check for file change
-require('./handler/message')
-nocache('./handler/message', module => console.log(`'${module}' Updated!`))
+module.exports = class Greeting {
 
-const start = (client = new Client()) => {
-    console.log('[DEV]', color('NikkiXploit.com', 'yellow'))
-    console.log('[CLIENT] CLIENT Started!')
+    constructor() {
+        this.username = "Clyde";
+        this.guildName = "ServerName";
+        this.colorTitleBorder = "#ffffff";
+        this.colorMemberCount = "#ffffff";
+        this.textMemberCount = "Member Ke {count}";
+        this.memberCount = "0";
+        this.backgroundImage = `${__dirname}/../../assets/img/1px.png`;
+        this.avatar = `${__dirname}/../../assets/img/default-avatar.png`;
+        this.opacityBorder = "0.4";
+        this.colorBorder = "#000000";
+        this.colorUsername = "#ffffff";
+        this.colorUsernameBox = "#000000";
+        this.opacityUsernameBox = "0.4";
+        this.discriminator = "XXXX";
+        this.colorDiscriminator = "#ffffff";
+        this.opacityDiscriminatorBox = "0.4";
+        this.colorDiscriminatorBox = "#000000";
+        this.colorMessage = "#ffffff";
+        this.colorHashtag = "#ffffff";
+        this.colorBackground = "000000";
+    }
 
-    // Force it to keep the current session
-    client.onStateChanged((state) => {
-        console.log('[Client State]', state)
-        if (state === 'CONFLICT' || state === 'DISCONNECTED') client.forceRefocus()
-    })
-
-    // listening on message
-    client.onMessage((message) => {
-        // Cut message Cache if cache more than 3K
-        client.getAmountOfLoadedMessages().then((msg) => (msg >= 3000) && client.cutMsgCache())
-        // Message Handler (Loaded from recent cache)
-        require('./handler/message')(client, message)
-    })
+    setAvatar(value) {
+        this.avatar = value;
+        return this;
+    }
     
-    // listening on Incoming Call
-        client.onIncomingCall((call) => {
-            client.sendText(call.peerJid, 'Maaf, saya tidak bisa menerima panggilan. TELEPON/VC BOT AUTO BLOCK!.\n\nMau di unblock? *harus* bayar 5k dan hubungi whatsapp owner: https://wa.me/62851577296392')
-            .then(() => client.contactBlock(call.peerJid))
-        }) 
-
-    // listen group invitation
-    /*client.onAddedToGroup(({ groupMetadata: { id }, contact: { name } }) =>
-        client.getGroupMembersId(id)
-            .then((ids) => {
-                console.log('[CLIENT]', color(`Invited to Group. [ ${name} : ${ids.length}]`, 'yellow'))
-                // conditions if the group members are less than 10 then the bot will leave the group
-                if (ids.length <= 10) {
-                    client.sendText(id, 'Sorry, the minimum group member is 10 user to use this bot. Bye~').then(() => client.leaveGroup(id))
-                } else {
-                    client.sendText(id, `Hello group members *${name}*, thank you for inviting this bot, to see the bot menu send *#menu*`)
-                }
-            }))*/  
-
-    // listen paricipant event on group (wellcome message)
-  /* client.onGlobalParicipantsChanged(async (event) => {
-        const host = await client.getHostNumber() + '@c.us'
-        let profile = await client.getProfilePicFromServer(event.who)
-        if (profile == '' || profile == undefined) profile = 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTQcODjk7AcA4wb_9OLzoeAdpGwmkJqOYxEBA&usqp=CAU'
-        // kondisi ketika seseorang diinvite/join group lewat link
-        if (event.action === 'add' && event.who !== host) {
-            await client.sendFileFromUrl(event.chat, profile, 'profile.jpg', '')
-            await client.sendTextWithMentions(event.chat, `*NEW MEMBER* @${event.who.replace('@c.us', '')}\n\n*Welcome*😘`)
-        }
-        // kondisi ketika seseorang dikick/keluar dari group
-        if (event.action === 'remove' && event.who !== host) {
-            await client.sendFileFromUrl(event.chat, profile, 'profile.jpg', '')
-            await client.sendTextWithMentions(event.chat, `*MEMBER LEAVE* @${event.who.replace('@c.us', '')}\n\n*GoodBye*🖐`)
-        }
-    })*/
+    setDiscriminator(value) {
+        this.discriminator = value;
+        return this;
+    }
     
-    client.onGlobalParticipantsChanged(async (event) => {
-        const _welcome = JSON.parse(fs.readFileSync('./settings/welcome.json'))
-        const isWelcome = _welcome.includes(event.chat)
-        const gcChat = await client.getChatById(event.chat)
-        const pcChat = await client.getContact(event.who)
-        let { pushname, verifiedName, formattedName } = pcChat
-        pushname = pushname || verifiedName || formattedName
-        const { name, groupMetadata } = gcChat
-        const botNumbers = await client.getHostNumber() + '@c.us'
-        try {
-            if (event.action === 'add' && event.who !== botNumbers && isWelcome) {
-                const pic = await client.getProfilePicFromServer(event.who)
-                if (pic === undefined) {
-                    var picx = 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTQcODjk7AcA4wb_9OLzoeAdpGwmkJqOYxEBA&usqp=CAU=false'
-                } else {
-                    picx = pic
-                }
-                const welcomer = await new canvas.Welcome()
-                    .setUsername(pushname)
-                    .setDiscriminator(`${moment().format('DD-MM-YY')}`)
-                    .setMemberCount(groupMetadata.participants.length)
-                    .setGuildName(name)
-                    .setAvatar(picx)
-                    .setColor('border', '#ffffff')
-                    .setColor('username-box', '#ff0000')
-                    .setColor('discriminator-box', '#ff0000')
-                    .setColor('message-box', '#ff0000')
-                    .setColor('title', '#ffffff')
-                    .setBackground('https://raw.githubusercontent.com/shansekai/yusril-grabbed-result/main/img/wallpaperflaree.jpg')
-                    .toAttachment()
-                const base64 = `data:image/png;base64,${welcomer.toBuffer().toString('base64')}`
-                await client.sendFile(event.chat, base64, 'welcome.png', `Welcome ${pushname} 😘`)
-            } else if (event.action === 'remove' && event.who !== botNumbers && isWelcome) {
-                const pic = await client.getProfilePicFromServer(event.who)
-                if (pic === undefined) {
-                    var picxs = 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTQcODjk7AcA4wb_9OLzoeAdpGwmkJqOYxEBA&usqp=CAU=false'
-                } else {
-                    picxs = pic
-                }
-                const bye = await new canvas.Goodbye()
-                    .setUsername(pushname)
-                    .setDiscriminator(`${moment().format('DD-MM-YY')}`)
-                    .setMemberCount(groupMetadata.participants.length)
-                    .setGuildName(name)
-                    .setAvatar(picxs)
-                    .setColor('border', '#ffffff')
-                    .setColor('username-box', '#ff0000')
-                    .setColor('discriminator-box', '#ff0000')
-                    .setColor('message-box', '#ff0000')
-                    .setColor('title', '#ffffff')
-                    .setBackground('https://raw.githubusercontent.com/shansekai/yusril-grabbed-result/main/img/wallpaperflaree.jpg')
-                    .toAttachment()
-                const base64 = `data:image/png;base64,${bye.toBuffer().toString('base64')}`
-                await client.sendFile(event.chat, base64, 'welcome.png', `Good Bye ${pushname} 👋`)
-            }
-        } catch (err) {
-            console.error(err)
-        }
-    })
-}         
+    setUsername(value) {
+        this.username = value;
+        return this;
+    }
+    
+    setGuildName(value) {
+        this.guildName = value;
+        return this;
+    }
+    
+    setMemberCount(value) {
+        this.memberCount = value;
+        return this;
+    }
+    
+    setBackground(value) {
+        this.backgroundImage = value;
+        return this;
+    }
+    
+    setColor(variable, value) {
+        const formattedVariable = formatVariable("color", variable);
+        if (this[formattedVariable]) this[formattedVariable] = value;
+        return this;
+    }
+      
+    setText(variable, value) {
+        const formattedVariable = formatVariable("text", variable);
+        if (this[formattedVariable]) this[formattedVariable] = value;
+        return this;
+    }
+    
+    setOpacity(variable, value) {
+        const formattedVariable = formatVariable("opacity", variable);
+        if (this[formattedVariable]) this[formattedVariable] = value;
+        return this;
+    }
 
-/**
- * uncache if there is file change
- * @param {string} module module name or path
- * @param {function} cb when module updated <optional> 
- */
-function nocache(module, cb = () => { }) {
-    console.log('Module', `'${module}'`, 'is now being watched for changes')
-    require('fs').watchFile(require.resolve(module), async () => {
-        await uncache(require.resolve(module))
-        cb(module)
-    })
-}
+    async toAttachment() {
+        // Create canvas
+        const canvas = Canvas.createCanvas(1024, 450);
+        const ctx = canvas.getContext("2d");
 
-/**
- * uncache a module
- * @param {string} module module name or path
- */
-function uncache(module = '.') {
-    return new Promise((resolve, reject) => {
-        try {
-            delete require.cache[require.resolve(module)]
-            resolve()
-        } catch (e) {
-            reject(e)
-        }
-    })
-}
+        const guildName = this.textMessage.replace(/{server}/g, this.guildName);
+        const memberCount = this.textMemberCount.replace(/{count}/g, this.memberCount);
 
-const options = {
-    sessionId: 'Imperial',
-    headless: true,
-    qrTimeout: 0,
-    authTimeout: 0,
-    restartOnCrash: start,
-    cacheEnabled: false,
-    useChrome: true,
-    killProcessOnBrowserClose: true,
-    throwErrorOnTosBlock: false,
-    chromiumArgs: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--aggressive-cache-discard',
-        '--disable-cache',
-        '--disable-application-cache',
-        '--disable-offline-load-stale-cache',
-        '--disk-cache-size=0'
-    ]
-}
+        // Draw background
+        ctx.fillStyle = this.colorBackground;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        let background = await Canvas.loadImage(this.backgroundImage);
+        ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
-create(options)
-    .then((client) => start(client))
-    .catch((err) => new Error(err))
+        // Draw layer
+        ctx.fillStyle = this.colorBorder;
+        ctx.globalAlpha = this.opacityBorder;
+        ctx.fillRect(0, 0, 25, canvas.height);
+        ctx.fillRect(canvas.width - 25, 0, 25, canvas.height);
+        ctx.fillRect(25, 0, canvas.width - 50, 25);
+        ctx.fillRect(25, canvas.height - 25, canvas.width - 50, 25);
+        ctx.fillStyle = this.colorUsernameBox;
+        ctx.globalAlpha = this.opacityUsernameBox;
+        ctx.fillRect(344, canvas.height - 296, 636, 65);
+        ctx.fillStyle = this.colorDiscriminatorBox;
+        ctx.globalAlpha = this.opacityDiscriminatorBox;
+        ctx.fillRect(344, canvas.height - 202, 230, 65);
+        ctx.fillStyle = this.colorMessageBox;
+        ctx.globalAlpha = this.opacityMessageBox;
+        ctx.fillRect(308, canvas.height - 110, 672, 65);
+
+        // Draw username
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = this.colorUsername;
+        ctx.font = applyText(canvas, this.username, 48, 600, "Bold");
+        ctx.fillText(this.username, canvas.width - 660, canvas.height - 248);
+
+        // Draw guild name
+        ctx.fillStyle = this.colorMessage;
+        ctx.font = applyText(canvas, guildName, 53, 600, "Bold");
+        ctx.fillText(guildName, canvas.width - 690, canvas.height - 62);
+
+        // Draw discriminator
+        ctx.fillStyle = this.colorDiscriminator;
+        ctx.font = "40px Bold";
+        ctx.fillText(this.discriminator, canvas.width - 660, canvas.height - 155);
+
+        // Draw membercount
+        ctx.fillStyle = this.colorMemberCount;
+        ctx.font = "22px Bold";
+        ctx.fillText(memberCount, 40, canvas.height - 35);
+
+        // Draw title
+        ctx.font = "90px Bold";
+        ctx.strokeStyle = "#ff0000";
+        ctx.lineWidth = 5;
+        ctx.strokeText(this.textTitle, canvas.width - 620, canvas.height - 330);
+        ctx.fillStyle = this.colorTitle;
+        ctx.fillText(this.textTitle, canvas.width - 620, canvas.height - 330);
+
+        // Draw avatar circle
+        ctx.beginPath();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = "#ffffff";
+        ctx.arc(180, 225, 135, 0, Math.PI * 2, true);
+        ctx.stroke();
+        ctx.closePath();
+        ctx.clip();
+        const avatar = await Canvas.loadImage(this.avatar);
+        ctx.drawImage(avatar, 45, 90, 270, 270);
+
+        return canvas;
+    }
+};
