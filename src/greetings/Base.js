@@ -108,7 +108,7 @@ module.exports = class Greeting {
         // Draw username
         ctx.globalAlpha = 1;
         ctx.fillStyle = this.colorUsername;
-        ctx.font = applyText(canvas, this.username, 48, 600, "Bold");
+        ctx.font = applyText(canvas, this.username, 42, 600, "Bold");
         ctx.fillText(this.username, canvas.width - 660, canvas.height - 248);
 
         // Draw guild name
