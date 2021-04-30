@@ -100,7 +100,7 @@ module.exports = class Greeting {
         ctx.fillRect(344, canvas.height - 296, 636, 65);
         ctx.fillStyle = this.colorDiscriminatorBox;
         ctx.globalAlpha = this.opacityDiscriminatorBox;
-        ctx.fillRect(344, canvas.height - 202, 230, 65);
+        ctx.fillRect(344, canvas.height - 202, 235, 65); //set discriminator
         ctx.fillStyle = this.colorMessageBox;
         ctx.globalAlpha = this.opacityMessageBox;
         ctx.fillRect(308, canvas.height - 110, 672, 65);
